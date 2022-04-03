@@ -59,7 +59,7 @@ const obj = {
 //Retrienving the data
 let data = require('./pacotes.json');
 
-function main(data, callback, task) {
+function main(data, filtrarRegioesCB, filtrarTiposCB, task) {
 
 	let dataPolished = []
 	
@@ -98,14 +98,15 @@ function main(data, callback, task) {
 	});
 
 	//Essas constantes estão chamando a callback e armazenando o retorno da função
-	const regionsOrigem = callback(dataPolished, "regiaoOrigem")
-	const regionsDestino = callback(dataPolished, "regiaoDestino")
+	const regionsOrigem = filtrarRegioesCB(dataPolished, "regiaoOrigem")
+	const regionsDestino = filtrarRegioesCB(dataPolished, "regiaoDestino")
 	
 	if(task === 1 || task === 2) console.log(regionsOrigem);
 	if(task === 3) console.log(searchSulBrin(regionsOrigem))
 	if(task === 4) console.log(regionsDestino);
-}
 
+	console.log(listarVendedores(dataPolished))
+}
 
 /**
  *  Destiny Region Track
@@ -116,12 +117,6 @@ function main(data, callback, task) {
  *  atribui esse elemento a sua região, este sendo um array definido no escopo da função com um objeto representado o total de pacotes >
  *  e muda seu valor total.
  */
-
-//Sudeste 001 ~ 099 (1 ~ 99)
-//Sul 100 ~ 199 (100 ~199)
-//Centro Oeste 201 ~ 299
-//Nordeste 300 ~ 399
-//Norte 400 ~ 499
 
 
 function regiaoDestinoOrigem(data, destinoOrOrigem){
@@ -136,8 +131,13 @@ function regiaoDestinoOrigem(data, destinoOrOrigem){
 
 	data.forEach((element, index) => {
 		const regionNum = parseInt(element[destinoOrOrigem])
+		const typeNum = parseInt(element["tipoPacote"])
 		
-		
+		//se o elemento já estiver invalidado fechará e encerará essa iteração para não sobreescrever o aviso.
+		if(!element.pacoteValido) {
+			return	
+		}
+
 		// se o pacote for de origem centro oeste e o tipo do produto é joias atualizara para status invalido com mensagem.
 		if((destinoOrOrigem === "regiaoOrigem") && (regionNum >= 201 && regionNum <= 299) && (element["tipoPacote"] === "001")) {
 			data[index].pacoteValido = false
@@ -145,13 +145,14 @@ function regiaoDestinoOrigem(data, destinoOrOrigem){
 			return 
 		}
 
-
-		//se pacote for inválido irá pular.
-		if(!element.pacoteValido) {
-			return	
+		//validação de conteudo dos pacotes, se não for um tipo processado pela Loggi invalidará o código de barras.
+		if(((typeNum !== 001) && (typeNum !== 111) && (typeNum !== 333) && (typeNum !== 555) && (typeNum !== 888))){
+			data[index].pacoteValido = false
+			data[index].message = "Esse tipo de conteudo não é transportado."
+			return
 		}
-		
 
+		
 		if(regionNum >= 1 && regionNum <= 99) {
 			const total = sudeste.push(element) - 1
 			return sudeste[0].total = total
@@ -201,4 +202,33 @@ function searchSulBrin (data) {
 	return `Pacotes de origem Sul com conteúdos sendo brinquedos: \n${pkgsSulBrinquedos}`
 }
 
-main(data, regiaoDestinoOrigem, 3)
+function listarVendedores (data) {
+	const tempData = data
+	const vendedores = {}
+	
+	tempData.forEach((element, index, array)=> {
+		//Não lista pacotes invalidos
+		if(!element.pacoteValido) return;
+		
+		if(!vendedores[element["codigoVendedor"]]) {
+			return vendedores[element["codigoVendedor"]] = [element]
+		}
+		
+		vendedores[element["codigoVendedor"]].push(element)
+	})
+	
+	return vendedores
+}
+
+main(data, regiaoDestinoOrigem)
+
+
+// const obj1 = {codeVendedor: 321}
+
+// const newObj = {}
+
+// if(!newObj[obj1["codeVendedor"]]) {
+// 	newObj[obj1["codeVendedor"]] = obj1
+// }
+
+// console.log(newObj)
