@@ -100,10 +100,12 @@ function main(data, callback, task) {
 	//Essas constantes estão chamando a callback e armazenando o retorno da função
 	const regionsOrigem = callback(dataPolished, "regiaoOrigem")
 	const regionsDestino = callback(dataPolished, "regiaoDestino")
-	if(task === 1) console.log(dataPolished);
+	
+	if(task === 1 || task === 2) console.log(regionsOrigem);
+	if(task === 3) console.log(searchSulBrin(regionsOrigem))
+	if(task === 4) console.log(regionsDestino);
 }
 
-//validação do codigo de barras.
 
 /**
  *  Destiny Region Track
@@ -139,7 +141,7 @@ function regiaoDestinoOrigem(data, destinoOrOrigem){
 		// se o pacote for de origem centro oeste e o tipo do produto é joias atualizara para status invalido com mensagem.
 		if((destinoOrOrigem === "regiaoOrigem") && (regionNum >= 201 && regionNum <= 299) && (element["tipoPacote"] === "001")) {
 			data[index].pacoteValido = false
-			data[index].message = "Não transportamos joias de origem Centro-Oeste"
+			data[index].message = "Não transportamos joias com origem Centro-Oeste"
 			return 
 		}
 
@@ -183,9 +185,20 @@ function regiaoDestinoOrigem(data, destinoOrOrigem){
 
 	return regioes
 }
+//task 2 Indentificar pkgs de origem Sul e brinquedos como conteúdo.
 
-// Essa função irá listar os pacotes por região de Origem.
-function regiaoOrigem(data) {
+function searchSulBrin (data) {
+	const pkgsSulBrinquedos = []
 	
+	//o primeiro elemento sempre será o total de brinquedos
+	for (let i = 1; i < data.sul.length; i++) {
+		const element = data.sul[i];
+		const contentPacote = element["tipoPacote"]
+
+		if(contentPacote === "888") return pkgsSulBrinquedos.push(element)
+	}
+	if(pkgsSulBrinquedos.length === 0) return `Não foram encontrados pacotes de origem Sul com conteudo de brinquedos.`
+	return `Pacotes de origem Sul com conteúdos sendo brinquedos: \n${pkgsSulBrinquedos}`
 }
-main(data, regiaoDestinoOrigem, 1)
+
+main(data, regiaoDestinoOrigem, 3)
