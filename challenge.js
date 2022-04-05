@@ -59,7 +59,7 @@ const obj = {
 //Retrienving the data
 let data = require('./pacotes.json');
 
-function main(data, filtrarRegioesCB, filtrarTiposCB, task) {
+function main(data, filtrarRegioesCB, task, regiao) {
 
 	let dataPolished = []
 	
@@ -104,8 +104,9 @@ function main(data, filtrarRegioesCB, filtrarTiposCB, task) {
 	if(task === 1 || task === 2) console.log(regionsOrigem);
 	if(task === 3) console.log(searchSulBrin(regionsOrigem))
 	if(task === 4) console.log(regionsDestino);
-
-	console.log(listarVendedores(dataPolished))
+	if(task === 5) console.log(listarVendedores(dataPolished))
+	if(task === 6) console.log(listaDestinoETipos(regionsDestino)[regiao])
+	//console.log(listaDestinoETipos(regionsDestino)[regiao])
 }
 
 /**
@@ -133,11 +134,15 @@ function regiaoDestinoOrigem(data, destinoOrOrigem){
 		const regionNum = parseInt(element[destinoOrOrigem])
 		const typeNum = parseInt(element["tipoPacote"])
 		
-		//se o elemento já estiver invalidado fechará e encerará essa iteração para não sobreescrever o aviso.
+		//se o elemento já estiver invalidado encerará essa iteração para não sobreescrever o aviso.
 		if(!element.pacoteValido) {
 			return	
 		}
-
+		// se a trinca que corresponde ao codigo da Loggi estiver incorreto.
+		if(element.codigoLoggi !== "555") {
+			data[index].pacoteValido = false
+			return data[index].message = "Codigo da Loggi inválido, por favor entrar em contato."
+		}
 		// se o pacote for de origem centro oeste e o tipo do produto é joias atualizara para status invalido com mensagem.
 		if((destinoOrOrigem === "regiaoOrigem") && (regionNum >= 201 && regionNum <= 299) && (element["tipoPacote"] === "001")) {
 			data[index].pacoteValido = false
@@ -152,7 +157,13 @@ function regiaoDestinoOrigem(data, destinoOrOrigem){
 			return
 		}
 
-		
+		//em caso da região de origem ou destino for maior do que o suportado irá invalidar o código de barras.
+		if(regionNum > 499) {
+			data[index].pacoteValido = false
+			return data[index].message = "Não possuimos essa região no banco de dados."
+		}
+
+		//apartir daqui está separando os codigos de barras por região
 		if(regionNum >= 1 && regionNum <= 99) {
 			const total = sudeste.push(element) - 1
 			return sudeste[0].total = total
@@ -220,15 +231,63 @@ function listarVendedores (data) {
 	return vendedores
 }
 
-main(data, regiaoDestinoOrigem)
+function listaDestinoETipos (data, regiao) {
+// Jóias 001
+// Livros 111
+// Eletrônicos 333
+// Bebidas 555
+// Brinquedos 888
+	let regioes = {}
+	rgs = Object.keys(data)
+	for (let i = 0; i < rgs.length; i++) {
+		const joias = []
+		const livros = []
+		const eletronicos = []
+		const bebidas = [] 
+		const brinquedos = []
+		
+		
+		regioes[rgs[i]] = {}
+		
+		for(let j = 1; (data[rgs[i]].length > 1) && (j < data[rgs[i]].length); j++) {
+			element = data[rgs[i]][j]
+			//console.log(element)
+			if(element.tipoPacote === "001") {
+				joias.push(element)
+			}
+			if(element.tipoPacote === "111") {
+				livros.push(element)
+			}
+			if(element.tipoPacote === "333") {
+				eletronicos.push(element)
+			}
+			if(element.tipoPacote === "555") {
+				bebidas.push(element)
+			}
+			if(element.tipoPacote === "888") {
+				brinquedos.push(element)
+			}
+		}
+
+		if(joias.length > 0) {
+			regioes[rgs[i]]["joias"] = joias
+		}
+		if(livros.length > 0) {
+			regioes[rgs[i]]["livros"] = livros
+		}
+		if(eletronicos.length > 0) {
+			regioes[rgs[i]]["eletronicos"] = eletronicos
+		}
+		if(bebidas.length > 0) {
+			regioes[rgs[i]]["bebidas"] = bebidas
+		}
+		if(brinquedos.length > 0) {
+			regioes[rgs[i]]["brinquedos"] = brinquedos
+		}
+	}
+
+	return regioes
+}
 
 
-// const obj1 = {codeVendedor: 321}
-
-// const newObj = {}
-
-// if(!newObj[obj1["codeVendedor"]]) {
-// 	newObj[obj1["codeVendedor"]] = obj1
-// }
-
-// console.log(newObj)
+main(data, regiaoDestinoOrigem, 6, "nordeste")
