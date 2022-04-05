@@ -106,7 +106,8 @@ function main(data, filtrarRegioesCB, task, regiao) {
 	if(task === 4) console.log(regionsDestino);
 	if(task === 5) console.log(listarVendedores(dataPolished))
 	if(task === 6) console.log(listaDestinoETipos(regionsDestino)[regiao])
-	//console.log(listaDestinoETipos(regionsDestino)[regiao])
+	if(task === 10) console.log(listarPacotesInvalidos(dataPolished))
+	//console.log(dataPolished)
 }
 
 /**
@@ -231,7 +232,7 @@ function listarVendedores (data) {
 	return vendedores
 }
 
-function listaDestinoETipos (data, regiao) {
+function listaDestinoETipos (data) {
 // Jóias 001
 // Livros 111
 // Eletrônicos 333
@@ -289,5 +290,15 @@ function listaDestinoETipos (data, regiao) {
 	return regioes
 }
 
-
-main(data, regiaoDestinoOrigem, 6, "nordeste")
+function listarPacotesInvalidos (data) {
+	const pacotesInvalidos = []
+	for (let i = 0; i < data.length; i++) {
+		const pacote = data[i];
+		if(pacote.pacoteValido) {
+			continue
+		}
+		pacotesInvalidos.push(pacote)
+	}
+	return pacotesInvalidos
+}
+main(data, regiaoDestinoOrigem, 10)
