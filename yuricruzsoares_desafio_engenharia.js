@@ -1,50 +1,8 @@
 /**
-1. Identificar a região de destino de cada pacote, com totalização de
-pacotes (soma região);
-
-2. Saber quais pacotes possuem códigos de barras válidos e/ou
-inválidos;
-
-3. Identificar os pacotes que têm como origem a região Sul e
-Brinquedos em seu conteúdo;
-
-4. Listar os pacotes agrupados por região de destino (Considere apenas
-pacotes válidos);
-
-5. Listar o número de pacotes enviados por cada vendedor (Considere
-apenas pacotes válidos);
-
-6. Gerar o relatório/lista de pacotes por destino e por tipo (Considere
-apenas pacotes válidos);
-
-7. Se o transporte dos pacotes para o Norte passa pela Região
-Centro-Oeste, quais são os pacotes que devem ser despachados no
-mesmo caminhão?
-
-8. Se todos os pacotes fossem uma fila qual seria a ordem de carga
-para o Norte no caminhão para descarregar os pacotes da Região
-Centro Oeste primeiro;
-
-9. No item acima considerar que as jóias fossem sempre as primeiras a
-serem descarregadas;
-
-10. Listar os pacotes inválidos.
-*/
-
-/**
-Considere as seguintes restrições:
-1) A Loggi não envia produtos que não sejam dos tipos acima informados.
-2) Não é possível despachar pacotes contendo jóias tendo como região de
-origem o Centro-oeste;
-3) O vendedor 367 está com seu CNPJ inativo e, portanto, não pode mais
-enviar pacotes pela Loggi, os códigos de barra que estiverem relacionados
-a este vendedor devem ser considerados inválidos.
-*/
-
-/**
- *  Lembrar,
- *  1. os códigos da loggi possuem apenas 15 dígitos, significa que qualquer codigoBarra com menos ou mais é inválidado.
- *  Codigos de barra relacionado com 
+ * 	Nome: Yuri Cruz Soares da Silva
+	Universidade: Centro Universitário Favip Wyden
+	Curso: Análise e Desenvolvimento de Sistemas
+	Semestre atual: 3
  */
 const obj = {
 	pacote: 1,
@@ -104,22 +62,18 @@ function main(data, filtrarRegioesCB, task, regiao) {
 	if(task === 1 || task === 2) console.log(regionsOrigem);
 	if(task === 3) console.log(searchSulBrin(regionsOrigem))
 	if(task === 4) console.log(regionsDestino);
-	if(task === 5) console.log(listarVendedores(dataPolished))
-	if(task === 6) console.log(listaDestinoETipos(regionsDestino)[regiao])
+	if(task === 5) console.log(listarVendedores(dataPolished));
+	if(task === 6) console.log(listaDestinoETipos(regionsDestino)[regiao]);
+	if(task === 7) console.log("Não processado")
+	if(task === 8) console.log(despacharPrimeiroNoNorte(dataPolished))
+	if(task === 9) console.log("Não processado")
 	if(task === 10) console.log(listarPacotesInvalidos(dataPolished))
-	//console.log(dataPolished)
+	// console.log(dataPolished)
 }
 
 /**
  *  Destiny Region Track
- *  
- *  função regiaoDestinoOrigem resolve desafio 1 e 4
- *  a cada iteração no array de data >
- *  está sendo filtrado os elementos por região >
- *  atribui esse elemento a sua região, este sendo um array definido no escopo da função com um objeto representado o total de pacotes >
- *  e muda seu valor total.
  */
-
 
 function regiaoDestinoOrigem(data, destinoOrOrigem){
 	let regioes = {}
@@ -198,8 +152,8 @@ function regiaoDestinoOrigem(data, destinoOrOrigem){
 
 	return regioes
 }
-//task 2 Indentificar pkgs de origem Sul e brinquedos como conteúdo.
 
+//task 2 Indentificar pkgs de origem Sul e brinquedos como conteúdo.
 function searchSulBrin (data) {
 	const pkgsSulBrinquedos = []
 	
@@ -214,6 +168,7 @@ function searchSulBrin (data) {
 	return `Pacotes de origem Sul com conteúdos sendo brinquedos: \n${pkgsSulBrinquedos}`
 }
 
+//Task 5
 function listarVendedores (data) {
 	const tempData = data
 	const vendedores = {}
@@ -232,6 +187,7 @@ function listarVendedores (data) {
 	return vendedores
 }
 
+//Task 6
 function listaDestinoETipos (data) {
 // Jóias 001
 // Livros 111
@@ -290,6 +246,75 @@ function listaDestinoETipos (data) {
 	return regioes
 }
 
+//Task 8
+/**
+ * 	Pela logistica, os primeiros itens carregados a serem carregados num caminhão
+ * 	serão os ultimos a serem despachados.
+ * 	Assim sendo, o array tempPacotes deve representar o caminhão, de tal forma os ultimos itens carregados, serã os primeiros despachados.
+ * 	Como task 10 cobra que pacotes com ORIGEM CENTRO OESTE seja despachados primeiro, estes devem ser o ultimo a ser carregados no caminhão.
+ */
+function despacharPrimeiroNoNorte (data = []) {
+	const filaTemp = []
+	
+	// aqui é o pacote criado por mim para testar a funcionalidade, pode ser excluido ou inserido novos dados em pacotes.json para ser testado
+	data.unshift({
+			id: 21,
+			codigoBarra: '227415555584333',
+			regiaoOrigem: '227',
+			regiaoDestino: '415',
+			codigoLoggi: '555',
+			codigoVendedor: '584',
+			tipoPacote: '333',
+			pacoteValido: true	  
+		})
+	
+	//filtrar produtos para o norte e popular o array tempPacotes
+	for(let i = 0; i < data.length; i++) {
+		const pacote = data[i];
+		const pacoteRegDestN = parseInt(data[i].regiaoDestino)
+		const pacoteRegOriN = parseInt(data[i].regiaoOrigem)
+		
+		if(!((pacoteRegDestN >= 400) && (pacoteRegDestN <= 499))) {
+			continue;
+		}
+
+		if(pacoteRegOriN >= 201 && pacoteRegOriN <= 299) {
+			pacote.RON = "Centro Oeste"
+		}
+		filaTemp.push(pacote)
+	}
+	
+
+	for(let i = 0; i < filaTemp.length; i++) {
+		//irá percorrer de trás para frente, sendo que sempre se limitará ao index da iteralção pai
+		for(let j = filaTemp.length-1; j > i; j--) {
+			
+			//se o primeiro valor não for nordeste não precisará trocar de lugar
+			//logo encerrará esse ciclo.
+			if(!filaTemp[i].RON) {
+				break
+			}
+
+			//se o primeiro for centro-oeste e o ultimo também, passar para a próximo iteração
+			if(filaTemp[i].RON && filaTemp[j].RON) {
+				continue
+			}
+
+			//se o primeiro da fila for centro-oeste, e o ultimo não for = swap 
+			// fazendo que o primeiro(centro-oeste) passe para o fim do caminhão 
+			// e o ultimo(não centro-oeste) para o começo do caminhão.
+			if(filaTemp[i].RON && !filaTemp[j].RON) {
+				[filaTemp[i], filaTemp[j]] = [filaTemp[j], filaTemp[i]]
+				continue
+			}
+		}
+
+
+	}
+	return filaTemp
+}
+
+//Task 10
 function listarPacotesInvalidos (data) {
 	const pacotesInvalidos = []
 	for (let i = 0; i < data.length; i++) {
@@ -301,4 +326,6 @@ function listarPacotesInvalidos (data) {
 	}
 	return pacotesInvalidos
 }
-main(data, regiaoDestinoOrigem, 10)
+
+main(data, regiaoDestinoOrigem, 4)
+
