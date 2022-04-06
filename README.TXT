@@ -11,3 +11,5 @@ Ele está sendo importado e lido no desafio.
 
 Durante a resolução do desafio 8, por não ter dado que pudesse prosseguir com o desafio criei um no modelo de outro e 
 modifiquei os parametros para o algoritmo ter sua funcionalidade testada.
+
+Na linha 330 só precisa mudar o valor númerico para o que corresponde a task do desafio e observar no console o resultado.
